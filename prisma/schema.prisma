@@ -1,0 +1,652 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================
+// ENUMS
+// =====================
+
+enum RoleType {
+  CLIENT
+  VENDEUR
+  LIVREUR
+  ADMIN
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum StatutCommande {
+  EN_ATTENTE_PAIEMENT
+  PAYEE
+  EN_PREPARATION
+  PRETE
+  EN_LIVRAISON
+  LIVREE
+  ANNULEE
+  REMBOURSEE
+  LITIGE
+}
+
+enum StatutLivraison {
+  EN_ATTENTE
+  ACCEPTEE
+  EN_ROUTE_VENDEUR
+  COLIS_RECUPERE
+  EN_ROUTE_CLIENT
+  LIVREE
+  ECHEC
+}
+
+enum MethodePaiement {
+  MTN_MONEY
+  MOOV_MONEY
+  FLOOZ
+  CARTE_BANCAIRE
+  PAYPAL
+}
+
+enum StatutPaiement {
+  EN_ATTENTE
+  CONFIRME
+  ECHOUE
+  REMBOURSE
+}
+
+enum StatutEscrow {
+  BLOQUE
+  LIBERE
+  REMBOURSE
+}
+
+enum TypePromo {
+  POURCENTAGE
+  MONTANT_FIXE
+}
+
+enum TypeMessage {
+  TEXTE
+  IMAGE
+  LOCALISATION
+}
+
+enum TypeNotification {
+  COMMANDE
+  LIVRAISON
+  PAIEMENT
+  CHAT
+  PROMOTION
+  SYSTEME
+}
+
+enum NiveauFidelite {
+  BRONZE
+  ARGENT
+  OR
+  PLATINE
+}
+
+enum TypeTransactionPoints {
+  GAIN
+  UTILISATION
+  EXPIRATION
+  BONUS
+}
+
+enum StatutSignalement {
+  EN_ATTENTE
+  TRAITE
+  REJETE
+}
+
+// =====================
+// UTILISATEURS
+// =====================
+
+model Utilisateur {
+  id           String   @id @default(uuid())
+  nom          String
+  email        String   @unique
+  telephone    String?  @unique
+  motDePasse   String?
+  avatar       String?
+  googleId     String?  @unique
+  fcmToken     String?
+  estActif     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  roles              Role[]
+  profilVendeur      ProfilVendeur?
+  profilLivreur      ProfilLivreur?
+  adresses           Adresse[]
+  panier             Panier?
+  commandesClient    Commande[]        @relation("CommandeClient")
+  likes              Like[]
+  commentaires       Commentaire[]
+  favoris            Favori[]
+  avis               Avis[]
+  notifications      Notification[]
+  pointsFidelite     PointsFidelite?
+  messagesEnvoyes    Message[]         @relation("MessageExpediteur")
+  conversations1     Conversation[]    @relation("Participant1")
+  conversations2     Conversation[]    @relation("Participant2")
+  signalements       Signalement[]     @relation("SignalementAuteur")
+  paiements          Paiement[]
+
+  @@map("utilisateurs")
+}
+
+model Role {
+  id             String    @id @default(uuid())
+  utilisateurId  String
+  type           RoleType
+  estActif       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+
+  utilisateur    Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@unique([utilisateurId, type])
+  @@map("roles")
+}
+
+model ProfilVendeur {
+  id                   String   @id @default(uuid())
+  utilisateurId        String   @unique
+  nomBoutique          String
+  description          String?
+  logo                 String?
+  banniere             String?
+  estVerifie           Boolean  @default(false)
+  documentsVerifies    Boolean  @default(false)
+  noteMoyenne          Float    @default(0)
+  totalVentes          Int      @default(0)
+  totalRevenu          Float    @default(0)
+  aBoutiqueConfiguree  Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  utilisateur    Utilisateur     @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  produits       Produit[]
+  zonesLivraison ZoneLivraison[]
+  codePromos     CodePromo[]
+  commandes      Commande[]      @relation("CommandeVendeur")
+
+  @@map("profils_vendeurs")
+}
+
+model ProfilLivreur {
+  id                  String   @id @default(uuid())
+  utilisateurId       String   @unique
+  numeroCNI           String?
+  photoCNI            String?
+  numeroMobileMoney   String
+  estVerifie          Boolean  @default(false)
+  estDisponible       Boolean  @default(false)
+  noteMoyenne         Float    @default(0)
+  totalLivraisons     Int      @default(0)
+  totalRevenu         Float    @default(0)
+  latitudeActuelle    Float?
+  longitudeActuelle   Float?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  utilisateur   Utilisateur    @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  livraisons    Livraison[]
+  positions     PositionGPS[]
+
+  @@map("profils_livreurs")
+}
+
+model Adresse {
+  id             String   @id @default(uuid())
+  utilisateurId  String
+  nom            String
+  rue            String
+  quartier       String
+  ville          String   @default("Cotonou")
+  latitude       Float
+  longitude      Float
+  estPrincipale  Boolean  @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime @default(now())
+
+  utilisateur  Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  commandes    Commande[]
+
+  @@map("adresses")
+}
+
+// =====================
+// PRODUITS
+// =====================
+
+model Categorie {
+  id        String   @id @default(uuid())
+  nom       String
+  slug      String   @unique
+  icone     String
+  couleur   String   @default("#2563EB")
+  parentId  String?
+  estActif  Boolean  @default(true)
+  ordre     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  parent      Categorie?  @relation("SousCategorie", fields: [parentId], references: [id])
+  enfants     Categorie[] @relation("SousCategorie")
+  produits    Produit[]
+
+  @@map("categories")
+}
+
+model Produit {
+  id            String    @id @default(uuid())
+  vendeurId     String
+  categorieId   String
+  nom           String
+  description   String
+  prix          Float
+  prixPromo     Float?
+  stock         Int       @default(0)
+  estDisponible Boolean   @default(true)
+  estEnPromo    Boolean   @default(false)
+  nombreLikes   Int       @default(0)
+  nombreVentes  Int       @default(0)
+  noteMoyenne   Float     @default(0)
+  nombreAvis    Int       @default(0)
+  estSignale    Boolean   @default(false)
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  vendeur        ProfilVendeur  @relation(fields: [vendeurId], references: [id], onDelete: Cascade)
+  categorie      Categorie      @relation(fields: [categorieId], references: [id])
+  medias         MediaProduit[]
+  likes          Like[]
+  commentaires   Commentaire[]
+  favoris        Favori[]
+  avis           Avis[]
+  lignesCommande LigneCommande[]
+  lignesPanier   LignePanier[]
+  signalements   Signalement[]
+
+  @@map("produits")
+}
+
+model MediaProduit {
+  id        String    @id @default(uuid())
+  produitId String
+  url       String
+  type      MediaType
+  ordre     Int       @default(0)
+  duree     Int?
+  thumbnail String?
+  createdAt DateTime  @default(now())
+
+  produit Produit @relation(fields: [produitId], references: [id], onDelete: Cascade)
+
+  @@map("medias_produits")
+}
+
+model ZoneLivraison {
+  id        String   @id @default(uuid())
+  vendeurId String
+  nom       String
+  rayonMin  Float    @default(0)
+  rayonMax  Float
+  prix      Float    @default(0)
+  estActif  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  vendeur ProfilVendeur @relation(fields: [vendeurId], references: [id], onDelete: Cascade)
+
+  @@map("zones_livraison")
+}
+
+model Like {
+  id            String   @id @default(uuid())
+  utilisateurId String
+  produitId     String
+  createdAt     DateTime @default(now())
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  produit     Produit     @relation(fields: [produitId], references: [id], onDelete: Cascade)
+
+  @@unique([utilisateurId, produitId])
+  @@map("likes")
+}
+
+model Commentaire {
+  id            String    @id @default(uuid())
+  utilisateurId String
+  produitId     String
+  contenu       String
+  estSignale    Boolean   @default(false)
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  utilisateur Utilisateur  @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  produit     Produit      @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  signalements Signalement[]
+
+  @@map("commentaires")
+}
+
+model Favori {
+  id            String   @id @default(uuid())
+  utilisateurId String
+  produitId     String
+  createdAt     DateTime @default(now())
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  produit     Produit     @relation(fields: [produitId], references: [id], onDelete: Cascade)
+
+  @@unique([utilisateurId, produitId])
+  @@map("favoris")
+}
+
+model Avis {
+  id            String   @id @default(uuid())
+  utilisateurId String
+  produitId     String
+  commandeId    String   @unique
+  note          Int
+  commentaire   String?
+  photos        String[]
+  createdAt     DateTime @default(now())
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  produit     Produit     @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  commande    Commande    @relation(fields: [commandeId], references: [id])
+
+  @@map("avis")
+}
+
+model Signalement {
+  id            String            @id @default(uuid())
+  auteurId      String
+  produitId     String?
+  commentaireId String?
+  raison        String
+  statut        StatutSignalement @default(EN_ATTENTE)
+  createdAt     DateTime          @default(now())
+
+  auteur      Utilisateur  @relation("SignalementAuteur", fields: [auteurId], references: [id])
+  produit     Produit?     @relation(fields: [produitId], references: [id])
+  commentaire Commentaire? @relation(fields: [commentaireId], references: [id])
+
+  @@map("signalements")
+}
+
+// =====================
+// COMMANDES
+// =====================
+
+model Panier {
+  id            String   @id @default(uuid())
+  utilisateurId String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  utilisateur  Utilisateur   @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  lignes       LignePanier[]
+
+  @@map("paniers")
+}
+
+model LignePanier {
+  id        String   @id @default(uuid())
+  panierId  String
+  produitId String
+  quantite  Int      @default(1)
+  createdAt DateTime @default(now())
+
+  panier  Panier  @relation(fields: [panierId], references: [id], onDelete: Cascade)
+  produit Produit @relation(fields: [produitId], references: [id], onDelete: Cascade)
+
+  @@unique([panierId, produitId])
+  @@map("lignes_panier")
+}
+
+model Commande {
+  id                String         @id @default(uuid())
+  clientId          String
+  vendeurId         String
+  adresseId         String
+  numero            String         @unique
+  statut            StatutCommande @default(EN_ATTENTE_PAIEMENT)
+  montantTotal      Float
+  montantLivraison  Float          @default(0)
+  montantCommission Float          @default(0)
+  noteClient        Int?
+  codePromoId       String?
+  reductionAppliquee Float?
+  deletedAt         DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  client    Utilisateur   @relation("CommandeClient", fields: [clientId], references: [id])
+  vendeur   ProfilVendeur @relation("CommandeVendeur", fields: [vendeurId], references: [id])
+  adresse   Adresse       @relation(fields: [adresseId], references: [id])
+  codePromo CodePromo?    @relation(fields: [codePromoId], references: [id])
+  lignes    LigneCommande[]
+  paiement  Paiement?
+  livraison Livraison?
+  escrow    Escrow?
+  avis      Avis?
+
+  @@map("commandes")
+}
+
+model LigneCommande {
+  id          String @id @default(uuid())
+  commandeId  String
+  produitId   String
+  quantite    Int
+  prixUnitaire Float
+  sousTotal   Float
+
+  commande Commande @relation(fields: [commandeId], references: [id], onDelete: Cascade)
+  produit  Produit  @relation(fields: [produitId], references: [id])
+
+  @@map("lignes_commande")
+}
+
+// =====================
+// PAIEMENTS
+// =====================
+
+model Paiement {
+  id                String          @id @default(uuid())
+  commandeId        String          @unique
+  utilisateurId     String
+  montant           Float
+  methode           MethodePaiement
+  statut            StatutPaiement  @default(EN_ATTENTE)
+  referenceExterne  String?
+  flutterwaveRef    String?
+  donneesWebhook    Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  commande    Commande    @relation(fields: [commandeId], references: [id])
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id])
+  escrow      Escrow?
+
+  @@map("paiements")
+}
+
+model Escrow {
+  id              String       @id @default(uuid())
+  paiementId      String       @unique
+  commandeId      String       @unique
+  montant         Float
+  statut          StatutEscrow @default(BLOQUE)
+  dateLiberation  DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  paiement Paiement @relation(fields: [paiementId], references: [id])
+  commande Commande @relation(fields: [commandeId], references: [id])
+
+  @@map("escrows")
+}
+
+model CodePromo {
+  id              String     @id @default(uuid())
+  vendeurId       String
+  code            String     @unique
+  type            TypePromo
+  valeur          Float
+  dateExpiration  DateTime
+  usagesMax       Int        @default(100)
+  usagesActuels   Int        @default(0)
+  estActif        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+
+  vendeur   ProfilVendeur @relation(fields: [vendeurId], references: [id], onDelete: Cascade)
+  commandes Commande[]
+
+  @@map("codes_promo")
+}
+
+// =====================
+// LIVRAISONS
+// =====================
+
+model Livraison {
+  id                 String          @id @default(uuid())
+  commandeId         String          @unique
+  livreurId          String
+  statut             StatutLivraison @default(EN_ATTENTE)
+  adresseDepart      String
+  adresseArrivee     String
+  latitudeDepart     Float?
+  longitudeDepart    Float?
+  latitudeArrivee    Float?
+  longitudeArrivee   Float?
+  latitudeActuelle   Float?
+  longitudeActuelle  Float?
+  distanceKm         Float?
+  dureeEstimeeMin    Int?
+  montant            Float
+  photoRecuperation  String?
+  photoLivraison     String?
+  noteClient         Int?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  commande  Commande      @relation(fields: [commandeId], references: [id])
+  livreur   ProfilLivreur @relation(fields: [livreurId], references: [id])
+  positions PositionGPS[]
+
+  @@map("livraisons")
+}
+
+model PositionGPS {
+  id          String   @id @default(uuid())
+  livreurId   String
+  livraisonId String
+  latitude    Float
+  longitude   Float
+  vitesse     Float?
+  createdAt   DateTime @default(now())
+
+  livreur   ProfilLivreur @relation(fields: [livreurId], references: [id])
+  livraison Livraison     @relation(fields: [livraisonId], references: [id], onDelete: Cascade)
+
+  @@map("positions_gps")
+}
+
+// =====================
+// COMMUNICATION
+// =====================
+
+model Conversation {
+  id             String   @id @default(uuid())
+  commandeId     String?
+  participant1Id String
+  participant2Id String
+  dernierMessage String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  participant1 Utilisateur @relation("Participant1", fields: [participant1Id], references: [id])
+  participant2 Utilisateur @relation("Participant2", fields: [participant2Id], references: [id])
+  messages     Message[]
+
+  @@unique([participant1Id, participant2Id])
+  @@map("conversations")
+}
+
+model Message {
+  id             String      @id @default(uuid())
+  conversationId String
+  expediteurId   String
+  contenu        String
+  type           TypeMessage @default(TEXTE)
+  estLu          Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  expediteur   Utilisateur  @relation("MessageExpediteur", fields: [expediteurId], references: [id])
+
+  @@map("messages")
+}
+
+model Notification {
+  id            String           @id @default(uuid())
+  utilisateurId String
+  titre         String
+  corps         String
+  type          TypeNotification
+  estLue        Boolean          @default(false)
+  data          Json?
+  createdAt     DateTime         @default(now())
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// =====================
+// FIDELITE
+// =====================
+
+model PointsFidelite {
+  id            String         @id @default(uuid())
+  utilisateurId String         @unique
+  solde         Int            @default(0)
+  niveau        NiveauFidelite @default(BRONZE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  utilisateur  Utilisateur          @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  transactions TransactionPoints[]
+
+  @@map("points_fidelite")
+}
+
+model TransactionPoints {
+  id               String                @id @default(uuid())
+  pointsFideliteId String
+  commandeId       String?
+  points           Int
+  type             TypeTransactionPoints
+  description      String
+  createdAt        DateTime              @default(now())
+
+  pointsFidelite PointsFidelite @relation(fields: [pointsFideliteId], references: [id], onDelete: Cascade)
+
+  @@map("transactions_points")
+}
