@@ -6,6 +6,11 @@ import * as admin from 'firebase-admin';
 export class FirebaseService implements OnModuleInit {
   private app: admin.app.App;
 
+  // Getter pour accéder à l'instance Firebase
+  get firebaseApp(): admin.app.App {
+    return this.app;
+  }
+
   onModuleInit() {
     if (!admin.apps.length) {
       this.app = admin.initializeApp({

@@ -12,7 +12,7 @@ import { UpdateFcmDto } from './dto/update-fcm.dto';
 
 class ActtiverBoutiqueDto{
     @IsString()
-    monBoutique: string;
+    nomBoutique: string;
 }
 
 class DevenirLivreurDto{
@@ -59,7 +59,7 @@ export class AuthController {
         @CurrentUser() user : any,
         @Body() dto: ActtiverBoutiqueDto,
     ){
-        return this.authService.activerBoutique(user.id, dto.monBoutique);
+        return this.authService.activerBoutique(user.id, dto.nomBoutique);
     }
 
     @Post('devenir-livreur')
