@@ -299,14 +299,15 @@ model MediaProduit {
 }
 
 model ZoneLivraison {
-  id        String   @id @default(uuid())
-  vendeurId String
-  nom       String
-  rayonMin  Float    @default(0)
-  rayonMax  Float
-  prix      Float    @default(0)
-  estActif  Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  vendeurId   String
+  nom         String
+  rayonMin    Float    @default(0)
+  rayonMax    Float
+  prix        Float    @default(0)
+  description String?  // ← cette ligne doit être là
+  estActif    Boolean  @default(true)
+  createdAt   DateTime @default(now())
 
   vendeur ProfilVendeur @relation(fields: [vendeurId], references: [id], onDelete: Cascade)
 

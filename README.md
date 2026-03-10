@@ -1,100 +1,343 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🛍️ TrouveTout — API Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+> **Marketplace sociale locale africaine** — "Le WhatsApp Status qui vend vraiment"  
+> Backend complet pour une application de commerce mobile au Bénin (Cotonou)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Socket.io](https://img.shields.io/badge/Socket.io-black?style=for-the-badge&logo=socket.io&badgeColor=010101)
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📌 À propos du projet
 
-## Project setup
+**TrouveTout** est une marketplace mobile-first conçue pour le marché béninois.  
+Elle permet à n'importe quel vendeur local de vendre ses produits via une application mobile simple,  
+avec paiement mobile money, livraison géolocalisée et chat en temps réel.
 
-```bash
-$ npm install
+### Problème résolu
+Au Bénin, la plupart des petits commerçants vendent via WhatsApp Status de façon désorganisée :
+- Pas de catalogue structuré
+- Paiements non sécurisés
+- Pas de suivi de livraison
+- Aucune visibilité sur leurs ventes
+
+**TrouveTout** centralise tout ça dans une seule application.
+
+---
+
+## ⚡ Stack technique
+
+| Technologie | Usage |
+|---|---|
+| **NestJS** | Framework backend (modules, guards, interceptors) |
+| **PostgreSQL** | Base de données relationnelle |
+| **Prisma ORM** | Modélisation et migrations |
+| **Socket.IO** | Chat temps réel + GPS livraison |
+| **KKiaPay** | Paiement mobile money (MTN, Moov, Flooz) |
+| **Cloudinary** | Stockage images et vidéos produits |
+| **Firebase FCM** | Notifications push mobiles |
+| **Claude API** | Chatbot IA + analyse produits |
+| **JWT** | Authentification (Access + Refresh tokens) |
+| **Bcrypt** | Hashage des mots de passe |
+
+---
+
+## 🏗️ Architecture
+
+```
+src/
+├── modules/
+│   ├── auth/            # JWT, Google OAuth, FCM Token
+│   ├── users/           # Profils, adresses, favoris
+│   ├── upload/          # Cloudinary (images, vidéos)
+│   ├── categories/      # Catégories produits
+│   ├── produits/        # CRUD + likes + commentaires + avis
+│   ├── feed/            # Algorithme 5+4+3+3
+│   ├── panier/          # Gestion panier
+│   ├── commandes/       # Cycle de vie commande
+│   ├── paiements/       # KKiaPay + Escrow
+│   ├── livraisons/      # GPS WebSocket + zones
+│   ├── chat/            # WebSocket temps réel
+│   ├── notifications/   # Firebase FCM
+│   ├── fidelite/        # Points, niveaux, leaderboard
+│   ├── analytiques/     # Dashboard vendeur + admin
+│   └── ia/              # Claude API (chatbot, analyse, prix)
+├── common/
+│   ├── guards/          # JWT, Roles
+│   ├── decorators/      # @CurrentUser, @Roles, @Public
+│   ├── filters/         # Exception filter global
+│   └── interceptors/    # Transform response
+└── prisma/              # Schema + migrations + seed
 ```
 
-## Compile and run the project
+---
+
+## 📦 Modules & Fonctionnalités
+
+### 🔐 Authentification
+- Register / Login avec JWT (Access + Refresh tokens)
+- Activation boutique vendeur
+- Inscription livreur
+- Mise à jour FCM token
+- Rôles : `CLIENT` | `VENDEUR` | `LIVREUR` | `ADMIN`
+
+### 👤 Utilisateurs
+- Profil complet avec avatar Cloudinary
+- Gestion multi-adresses avec géolocalisation
+- Favoris, historique commandes, points fidélité
+
+### 📸 Upload Cloudinary
+- Images produits (simple + multiple)
+- Vidéos 30s max
+- Avatars utilisateurs
+
+### 🛍️ Produits
+- CRUD complet avec médias
+- Like / Unlike
+- Commentaires et signalements
+- Avis avec note (1-5)
+- Soft delete
+
+### 🎯 Algorithme Feed
+```
+Feed = 5 récents + 4 populaires + 3 promos + 3 suivis = 15 produits
+```
+- Feed par catégorie
+- Tendances
+- Produits similaires
+- Recherche full-text
+
+### 🛒 Panier & Commandes
+- Panier persistant par utilisateur
+- Création commande depuis panier
+- Numérotation automatique `TT-XXXXXXXX`
+- Cycle : `EN_ATTENTE_PAIEMENT` → `PAYEE` → `EN_PREPARATION` → `PRETE` → `EN_LIVRAISON` → `LIVREE`
+- Stock auto-décrémenté à la commande
+
+### 💳 Paiements KKiaPay
+- Initiation paiement (retourne `kkiapayData` pour SDK Flutter)
+- Confirmation paiement
+- **Système Escrow** — argent bloqué jusqu'à livraison confirmée
+- Webhook serveur-à-serveur avec vérification signature HMAC
+- Historique paiements
+
+### 🚴 Livraisons GPS
+- Zones de livraison vendeur configurables (rayon min/max, prix)
+- Calcul automatique frais livraison (formule Haversine)
+- WebSocket GPS : position mise à jour en temps réel
+- Statuts : `ACCEPTEE` → `EN_ROUTE_VENDEUR` → `COLIS_RECUPERE` → `EN_ROUTE_CLIENT` → `LIVREE`
+- Historique positions GPS
+
+### 💬 Chat WebSocket
+- Conversations client ↔ vendeur ↔ livreur
+- Messages temps réel via Socket.IO
+- Indicateur de frappe
+- Marquage lu / non lu
+- Notifications push automatiques
+
+### 🔔 Notifications FCM
+- Push notifications Firebase
+- Types : `COMMANDE` | `LIVRAISON` | `PAIEMENT` | `CHAT` | `SYSTEME`
+- Nettoyage automatique tokens invalides
+- Helpers métier : `notifNouvelleCommande`, `notifPaiementConfirme`, etc.
+
+### 🎁 Fidélité
+- **1 point par 100 FCFA** dépensé
+- Niveaux : `BRONZE` → `ARGENT` (1000pts) → `OR` (5000pts) → `PLATINE` (10000pts)
+- Avantages par niveau (livraison gratuite, accès anticipé, cashback...)
+- Utilisation points comme réduction (100pts = 100 FCFA)
+- Leaderboard public
+- Transactions traçables
+
+### 🤖 IA — Claude API
+- **Chatbot produit** : assistant commercial contextuel, historique conversation
+- **Analyse produit vendeur** : score 0-100, points forts, conseils (JSON structuré)
+- **Suggestion de prix** : basée sur produits similaires en base + stratégie
+- **Génération description** : courte + longue + mots-clés SEO
+
+### 📊 Analytiques Vendeur
+- Dashboard : CA aujourd'hui / ce mois / total + variations
+- Évolution ventes : graphique par jour (7j / 30j / 90j)
+- Top produits par chiffre d'affaires
+- Alertes stock faible (< 5 unités)
+- Analyse clients : taux fidélité, panier moyen, top clients
+- Dashboard admin : stats globales + commissions plateforme
+
+---
+
+## 🚀 Installation
+
+### Prérequis
+- Node.js 18+
+- PostgreSQL 14+
+- Compte Cloudinary
+- Compte KKiaPay
+- Projet Firebase
+- Clé API Anthropic (Claude)
+
+### Étapes
 
 ```bash
-# development
-$ npm run start
+# 1. Cloner le repo
+git clone https://github.com/ton-username/trouvetout-backend.git
+cd trouvetout-backend
 
-# watch mode
-$ npm run start:dev
+# 2. Installer les dépendances
+npm install
 
-# production mode
-$ npm run start:prod
+# 3. Configurer les variables d'environnement
+cp .env.example .env
+# Remplir toutes les variables dans .env
+
+# 4. Créer la base de données et appliquer les migrations
+npx prisma migrate deploy
+
+# 5. Générer le client Prisma
+npx prisma generate
+
+# 6. Seeder la base (admin + catégories)
+npx prisma db seed
+
+# 7. Démarrer en développement
+npm run start:dev
 ```
 
-## Run tests
+L'API sera disponible sur : `http://localhost:3000/api/v1`
 
-```bash
-# unit tests
-$ npm run test
+---
 
-# e2e tests
-$ npm run test:e2e
+## 🔧 Variables d'environnement
 
-# test coverage
-$ npm run test:cov
+```env
+# Base de données
+DATABASE_URL="postgresql://user:password@localhost:5432/trouvetout"
+
+# JWT
+JWT_SECRET="votre_secret_jwt"
+JWT_REFRESH_SECRET="votre_secret_refresh"
+JWT_EXPIRES_IN="15m"
+JWT_REFRESH_EXPIRES_IN="7d"
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME="votre_cloud_name"
+CLOUDINARY_API_KEY="votre_api_key"
+CLOUDINARY_API_SECRET="votre_api_secret"
+
+# KKiaPay
+KKIAPAY_PUBLIC_KEY="votre_cle_publique"
+KKIAPAY_PRIVATE_KEY="votre_cle_privee"
+KKIAPAY_SECRET_KEY="votre_cle_secrete"
+
+# Firebase
+FIREBASE_PROJECT_ID="votre_project_id"
+FIREBASE_CLIENT_EMAIL="votre_client_email"
+FIREBASE_PRIVATE_KEY="votre_private_key"
+
+# Anthropic (Claude AI)
+ANTHROPIC_API_KEY="votre_cle_anthropic"
+
+# App
+PORT=3000
+NODE_ENV=development
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 📡 Endpoints principaux
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
+### Auth
+```
+POST   /auth/register
+POST   /auth/login
+POST   /auth/refresh
+POST   /auth/activer-boutique
+POST   /auth/devenir-livreur
+GET    /auth/me
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Produits
+```
+GET    /produits              # Feed public
+POST   /produits              # Créer (vendeur)
+GET    /produits/:id          # Détail
+PUT    /produits/:id          # Modifier (vendeur)
+DELETE /produits/:id          # Supprimer (vendeur)
+POST   /produits/:id/like     # Like/Unlike
+```
 
-## Resources
+### Commandes
+```
+POST   /commandes             # Créer depuis panier
+GET    /commandes/mes-commandes
+GET    /commandes/vendeur
+PATCH  /commandes/:id/statut
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### Paiements
+```
+POST   /paiements/initier
+POST   /paiements/confirmer
+POST   /paiements/webhook/kkiapay
+POST   /paiements/escrow/:commandeId/liberer
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### WebSocket — Chat (`/chat`)
+```
+rejoindre_conversation  → { conversationId }
+envoyer_message         → { conversationId, contenu }
+en_train_d_ecrire       → { conversationId }
+nouveau_message         ← { message }
+```
 
-## Support
+### WebSocket — GPS (`/livraisons`)
+```
+rejoindre_livraison     → { livraisonId }
+position_gps            → { livraisonId, latitude, longitude }
+update_statut           → { livraisonId, statut }
+position_mise_a_jour    ← { latitude, longitude, timestamp }
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### IA
+```
+POST   /ia/chat               # Chatbot (public)
+POST   /ia/analyser-produit   # Analyse vendeur
+POST   /ia/suggerer-prix      # Suggestion prix
+POST   /ia/generer-description
+```
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🏦 Règles métier
 
-## License
+| Règle | Valeur |
+|---|---|
+| Commission plateforme | **8%** par commande |
+| Escrow | Argent bloqué jusqu'à livraison confirmée |
+| Vidéo produit max | **30 secondes** |
+| Produits gratuits max | **10 par vendeur** |
+| Points fidélité | **1 point / 100 FCFA** |
+| Conversion points | **100 pts = 100 FCFA** |
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# trouvetout-backend
+---
+
+## 📊 Schéma base de données
+
+**22 tables** :
+`utilisateurs` · `roles` · `profils_vendeurs` · `profils_livreurs` · `adresses` · `categories` · `produits` · `medias_produits` · `zones_livraison` · `likes` · `commentaires` · `favoris` · `avis` · `signalements` · `paniers` · `lignes_panier` · `commandes` · `lignes_commande` · `paiements` · `escrows` · `codes_promo` · `livraisons` · `positions_gps` · `conversations` · `messages` · `notifications` · `points_fidelite` · `transactions_points`
+
+---
+
+## 👨‍💻 Auteur
+
+**Daagbo** — Développeur Full Stack (Flutter · NestJS · Next.js)  
+📍 Cotonou, Bénin  
+🔗 [GitHub](https://github.com/ton-username)
+
+---
+
+## 📄 Licence
+
+MIT — Libre d'utilisation avec attribution.

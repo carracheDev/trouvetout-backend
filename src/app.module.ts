@@ -16,9 +16,10 @@ import { LivraisonsModule } from './modules/livraisons/livraisons.module';
 import { IaModule } from './modules/ia/ia.module';
 import { FideliteModule } from './modules/fidelite/fidelite.module';
 import { FeedModule } from './modules/feed/feed.module';
-import { EscrowModule } from './modules/escrow/escrow.module';
 import { CommandesModule } from './modules/commandes/commandes.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { ZonesModule } from './modules/zones/zones.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -27,13 +28,10 @@ import { CategoriesModule } from './modules/categories/categories.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-
     // Base de données
     PrismaModule,
-
     // Firebase
     FirebaseModule,
-
     // Modules fonctionnels
     AuthModule,
     UsersModule,
@@ -43,7 +41,6 @@ import { CategoriesModule } from './modules/categories/categories.module';
     PanierModule,
     CommandesModule,
     PaiementsModule,
-    EscrowModule,
     LivraisonsModule,
     AuthModule,
     NotificationsModule,
@@ -52,6 +49,8 @@ import { CategoriesModule } from './modules/categories/categories.module';
     AnalytiquesModule,
     UploadModule,
     ConfigModule,
+    ZonesModule,
+    ChatModule
   ],
   providers: [FirebaseService],
 })
