@@ -182,7 +182,7 @@ Feed = 5 récents + 4 populaires + 3 promos + 3 suivis = 15 produits
 
 ```bash
 # 1. Cloner le repo
-git clone https://github.com/ton-username/trouvetout-backend.git
+git clone https://github.com/carracheDev/trouvetout-backend
 cd trouvetout-backend
 
 # 2. Installer les dépendances
