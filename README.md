@@ -334,7 +334,7 @@ POST   /ia/generer-description
 
 **SODJINOU Jésupkégo Carrache** — Développeur Full Stack (Flutter · NestJS · Next.js)  
 📍 Cotonou, Bénin  
-🔗 [GitHub](https://github.com/ton-username)
+🔗 [GitHub](https://github.com/carracheDev)
 
 ---
 
