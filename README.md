@@ -332,7 +332,7 @@ POST   /ia/generer-description
 
 ## 👨‍💻 Auteur
 
-**Daagbo** — Développeur Full Stack (Flutter · NestJS · Next.js)  
+**SODJINOU Jésupkégo Carrache** — Développeur Full Stack (Flutter · NestJS · Next.js)  
 📍 Cotonou, Bénin  
 🔗 [GitHub](https://github.com/ton-username)
 
